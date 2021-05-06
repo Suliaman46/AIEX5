@@ -1,57 +1,60 @@
 import json
 from node import Node
 from Bnetwork import Bnetwork
+import numpy as np
+
 from collections.abc import Iterable
 
-f = open('alarm.json')
+
+def verify_data(network):
+    # Check Probabilities
+    for name, node in network.node_list.items():
+        sum = 0
+        if not node.normalized_probabilities:
+            print("Invalid Data")
+            # Do something exityyy
+        for prob_key, prob_value in node.normalized_probabilities.items():
+            if not prob_key and (not prob_value or prob_value < 0 or prob_value > 1):
+                print('Invalid Data')
+                # Do something exityyy
+            sum += prob_value
+        if sum != 1:
+            print('Invalid Data')
+            # Do something exityyy
+
+
+# f = open('alarm.json')
+f = open('flower.json')
 data = json.load(f)
 
 network = Bnetwork()
 
-# for i in data:
-#     if i =='relations':
-#         for j in data[i]:
-#             network.add_node(j)
-    # else:
-    #     for key,value in data[i].items():
-    #         if isinstance(value,dict):
-    #             print('hi')
-
-
-
 for key,value in data.items():
     if key == 'nodes':
-        pass
-        # for i in value:
-        #     network.add_node(i)
+        for name in value:
+            new_node = Node(name)
+            network.add(new_node,name)
     else:
-        if isinstance(value,dict):
-            for key_n,value_n in value.items():
-                # print(key_n)
-                # print(value_n)
-                # print('next')
-                new_node = Node(key_n)
-                for key_node,value_node in value_n.items():
-                    # print(key_new)
-                    # print(value_new)
-                    # print('next')
-                    if key_node == 'parents':
-                        if value_node:
-                            new_node.parent_list = value_node
-                    else:
-                        # for key_prob, value_prob in value_node.items():
-                            # print(key_prob)
-                            # print(value_prob)
-                            # print('next')
-                        new_node.probabilities = value_node
-                network.add(new_node)
-                # print(type(value_n))
+        for key_n,value_n in value.items():
+            temp = network.node_list[key_n]
+            for key_node,value_node in value_n.items():
+                if key_node == 'parents':
+                    temp.parent_list = value_node
+                    for parent in temp.parent_list:
+                        network.node_list[parent].children_list.append(temp.name)
+                else:
+                    temp.probabilities = value_node
 
-for node in network:
-    if  node.parent_list:
-        for parent in node.parent_list:
-            network.get_node(parent).children.append(node)
+network.init()
+# network.print_blanket('earthquake')
+# verify_data(network)
+network.test('flower_species')
+# network.mcmc({"alarm":"T"})
 
-print(network)
+# {'a':0.95}
+# prob =
+# test =np.random.choice(['T','F'],p= prob)
+# print(test)
+
 
 
