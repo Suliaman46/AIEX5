@@ -1,7 +1,7 @@
 from node import Node
 import numpy as np
 
-ITERATIONS = 5
+ITERATIONS = 10000
 
 
 class Bnetwork:
@@ -65,16 +65,45 @@ class Bnetwork:
                 counters.update({node.name: 0})
 
         for i in range(ITERATIONS):       # random walking
-            x = np.random.choice(list(others.keys()))
-
-            # WHAT NOW IDK HELP
-
+            y = np.random.choice(list(others.keys()))
+            x = self.node_list[y]
+            prob = self.markov_sampling(x)
+            if np.random.rand() > prob:
+                for state in x.possible_states:
+                    if state != x.state:
+                        x.set_state(state)
+                        break
+            if x.name in query:
+                if x.state == 'T':
+                    counters[x.name] += 1
 
 
         # TEST
-        for name, node in self.node_list.items():
-            print(node.name + ': ' + node.state)
-        print(others)
-        print(counters)
+        # for name, node in self.node_list.items():
+        #     print(node.name + ': ' + node.state)
+        # print(others)
+        # print(counters)
 
+        for key, value in counters.items():
+            counters.update({key: value / ITERATIONS})
 
+        return counters
+
+    def markov_sampling(self, node):
+        product = self.calc_markov(node)
+        sum = 0
+        for child in node.children_list:
+            sum += self.calc_markov(self.node_list[child])
+        if sum == 0:
+            return product
+        else:
+            return product * sum
+
+    def calc_markov(self, node):
+        string = ''
+        for parent in node.parent_list:
+            string += self.node_list[parent].state + ','
+        string += node.state
+        for prob_key, prob_val in node.normalized_probabilities.items():
+            if prob_key == string:
+                return prob_val

@@ -23,8 +23,8 @@ def verify_data(network):
             # Do something exityyy
 
 
-# f = open('alarm.json')
-f = open('flower.json')
+f = open('alarm.json')
+# f = open('flower.json')
 data = json.load(f)
 
 network = Bnetwork()
@@ -48,13 +48,18 @@ for key,value in data.items():
 network.init()
 # network.print_blanket('earthquake')
 # verify_data(network)
-network.test('flower_species')
-# network.mcmc({"alarm":"T"})
-
+#network.test('flower_species')
+# network.mcmc({"color":"red"})
+answer = network.mcmc(evidence={"burglary":"T"}, query=["John_calls"])
+print(answer)
 # {'a':0.95}
 # prob =
 # test =np.random.choice(['T','F'],p= prob)
 # print(test)
 
-
-
+string = ''
+parent_list = ['F', 'T']
+for parent in parent_list:
+    string += parent + ','
+string += 'T'
+print(string)
