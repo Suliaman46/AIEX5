@@ -1,12 +1,16 @@
 from node import Node
 import numpy as np
-from numpy import random
+
+ITERATIONS = 5
+
 
 class Bnetwork:
+
     def __init__(self):
         self.size = 0
         self.node_list = {}
-    def add(self,node,name):
+
+    def add(self, node, name):
         self.node_list[name] = node
 
     def init(self):
@@ -15,18 +19,17 @@ class Bnetwork:
             self.normalize_prob(node)
             node.set_possible_states()
 
-    def normalize_prob(self,node):
-
+    def normalize_prob(self, node):
         if node.parent_list:
             sum_p = sum(node.probabilities.values())
            # for prob_key,prob_value in node.probabilities.items():
            #     prob_value = prob_value/sum
-            node.normalized_probabilities = {key:value/sum_p for key,value in node.probabilities.items()}
+            node.normalized_probabilities = {key: value/sum_p for key, value in node.probabilities.items()}
         else:
             node.normalized_probabilities = node.probabilities
-    def _init_blanket(self,node):
-        self._init_markov(node)
 
+    def _init_blanket(self, node):
+        self._init_markov(node)
 
     def _init_markov(self, node):
         node.markov_blanket.extend(node.parent_list)
@@ -36,42 +39,42 @@ class Bnetwork:
                 if parent not in node.markov_blanket and parent != node.name:
                     node.markov_blanket.append(parent)
 
-
-    def print_blanket(self,name_a):
-        for name,node in self.node_list.items():
+    def print_blanket(self, name_a):
+        for name, node in self.node_list.items():
             if name == name_a:
                 node.print_blanket()
-                return
+
     def __repr__(self):
         return str(self.node_list)
 
-    def test(self,name_a):
-        for name,node in self.node_list.items():
+    def test(self, name_a):
+        for name, node in self.node_list.items():
             if name == name_a:
                 node.set_possible_states()
-                return
-    def mcmc(self,evidence):
-        pas
-        # # #Setting the evidence
-        for name,node in self.node_list.items():
-            if name in evidence:
-                node.set_value(evidence[name])
+
+    def mcmc(self, evidence, query):
+        counters = {}
+        others = {}
+        for name, node in self.node_list.items():
+            if name in evidence:          # set evidence
+                node.set_state(evidence[name])
             else:
-                prob_T = 0
-                prob_F = 0
-                for prob_state,prob_val in node.normalized_probabilities.items():
-                    if prob_state[len(prob_state)-1] =='T':
-                        prob_T += prob_val
-                    else:
-                        prob_F += prob_val
+                node.set_state(np.random.choice(node.possible_states))
+                others.update({name: node})
+            if name in query:             # set counters
+                counters.update({node.name: 0})
 
-                prob_ar = [prob_T,prob_F]
-                node.set_value(np.random.choice(node.possible_states,p=prob_ar))
+        for i in range(ITERATIONS):       # random walking
+            x = np.random.choice(list(others.keys()))
 
-        count_T =0
-        count_F = 0
+            # WHAT NOW IDK HELP
 
-        
 
+
+        # TEST
+        for name, node in self.node_list.items():
+            print(node.name + ': ' + node.state)
+        print(others)
+        print(counters)
 
 
