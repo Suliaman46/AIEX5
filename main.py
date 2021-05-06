@@ -52,14 +52,6 @@ network.init()
 # network.mcmc({"color":"red"})
 answer = network.mcmc(evidence={"burglary":"T"}, query=["John_calls"])
 print(answer)
-# {'a':0.95}
-# prob =
-# test =np.random.choice(['T','F'],p= prob)
-# print(test)
+answer = network.mcmc(evidence={"burglary":"T", "alarm": "T"},query=["earthquake"])
+print(answer)
 
-string = ''
-parent_list = ['F', 'T']
-for parent in parent_list:
-    string += parent + ','
-string += 'T'
-print(string)

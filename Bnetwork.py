@@ -1,7 +1,7 @@
 from node import Node
 import numpy as np
 
-ITERATIONS = 10000
+ITERATIONS = 1000
 
 
 class Bnetwork:
@@ -56,26 +56,36 @@ class Bnetwork:
         counters = {}
         others = {}
         for name, node in self.node_list.items():
+
             if name in evidence:          # set evidence
                 node.set_state(evidence[name])
             else:
                 node.set_state(np.random.choice(node.possible_states))
                 others.update({name: node})
             if name in query:             # set counters
-                counters.update({node.name: 0})
+                counters.update({node.name: {'F':0,'T':0}})
+                # counters.update({node.name:0})
 
         for i in range(ITERATIONS):       # random walking
             y = np.random.choice(list(others.keys()))
             x = self.node_list[y]
             prob = self.markov_sampling(x)
-            if np.random.rand() > prob:
+            if np.random.rand() < prob:
                 for state in x.possible_states:
                     if state != x.state:
                         x.set_state(state)
                         break
-            if x.name in query:
-                if x.state == 'T':
-                    counters[x.name] += 1
+
+            for name in query:
+                val = self.node_list[name].state
+                # if val == 'T':
+                counters[name][val]+=1
+                    # counters[name]+=1
+            #
+            # if x.name in query:
+            #     if x.state == 'T':
+            #         counters[x.name] += 1
+            # else:
 
 
         # TEST
@@ -85,8 +95,9 @@ class Bnetwork:
         # print(counters)
 
         for key, value in counters.items():
-            counters.update({key: value / ITERATIONS})
-
+            # counters.update({key: value / ITERATIONS})
+            for state_key,state_value in value.items():
+                value.update({state_key:state_value/ITERATIONS})
         return counters
 
     def markov_sampling(self, node):
