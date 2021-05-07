@@ -1,57 +1,34 @@
-import json
-from node import Node
+import argparse
 from Bnetwork import Bnetwork
-import numpy as np
+from verification import verification
 
-from collections.abc import Iterable
+parser = argparse.ArgumentParser(description='Please enter data in the format [ Examples/alarms.json  Burglary:T John_calls 1000 -mb earthquake] ')
+parser.add_argument('file', metavar='File',type =str,help='JSON file name containing the Bayesian Network')
+# parser.add_argument('-e',metavar='--evidence',type=json.loads,help='Evidence is to be formatted as a dictionary' )
+parser.add_argument(
+    'e',metavar='Evidence',
+    type=lambda v: {k:str(v) for k,v in (x.split(':') for x in v.split(','))},
+    help='comma-separated Node:state pairs, e.g. Burglary:T,Color:blue'
+)
+parser.add_argument('q',metavar='Query', type=str,help='Name of the query node')
+parser.add_argument('i',metavar='iter',type= int,help='No of iterations of MCMC')
+parser.add_argument('-mb',metavar='--MarkovBlanket',type=str,help='Name of node whose markov blanket is to be printed')
+args = parser.parse_args()
 
+#Create Network
+network = Bnetwork(args.file,args.i)
+#Verify Network
+verify = verification(network)
+verify.verify_data()
+#Verify Evidence and Query
 
-def verify_data(network):
-    # Check Probabilities
-    for name, node in network.node_list.items():
-        sum = 0
-        if not node.normalized_probabilities:
-            print("Invalid Data")
-            # Do something exityyy
-        for prob_key, prob_value in node.normalized_probabilities.items():
-            if not prob_key and (not prob_value or prob_value < 0 or prob_value > 1):
-                print('Invalid Data')
-                # Do something exityyy
-            sum += prob_value
-        if sum != 1:
-            print('Invalid Data')
-            # Do something exityyy
+verify.check_parameters(network,args.e,[args.q])
 
-
-f = open('alarm.json')
-# f = open('flower.json')
-data = json.load(f)
-
-network = Bnetwork()
-
-for key,value in data.items():
-    if key == 'nodes':
-        for name in value:
-            new_node = Node(name)
-            network.add(new_node,name)
-    else:
-        for key_n,value_n in value.items():
-            temp = network.node_list[key_n]
-            for key_node,value_node in value_n.items():
-                if key_node == 'parents':
-                    temp.parent_list = value_node
-                    for parent in temp.parent_list:
-                        network.node_list[parent].children_list.append(temp.name)
-                else:
-                    temp.probabilities = value_node
-
-network.init()
-# network.print_blanket('earthquake')
-# verify_data(network)
-#network.test('flower_species')
-# network.mcmc({"color":"red"})
-answer = network.mcmc(evidence={"burglary":"T"}, query=["John_calls"])
+#Run MCMC
+answer = network.beta_mcmc(evidence=args.e, query=[args.q])
 print(answer)
-answer = network.mcmc(evidence={"burglary":"T", "alarm": "T"},query=["earthquake"])
-print(answer)
+#If needed print Markov Blanket
+if(args.mb):
+    print(network.print_blanket(args.mb))
+
 

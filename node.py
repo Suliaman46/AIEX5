@@ -4,7 +4,6 @@ class Node:
         self.parent_list = []
         self.children_list = []
         self.probabilities = {}
-        self.normalized_probabilities = {}
         self.markov_blanket = []
         self.possible_states = []
         self.state = None
@@ -25,7 +24,8 @@ class Node:
                 self.possible_states.append(string[-1])
 
     def __repr__(self):
-        return '  Parents - ' + str(self.parent_list) + ' Children - ' + str(self.children_list) + '\n'
+        # return '  Parents - ' + str(self.parent_list) + ' Children - ' + str(self.children_list) + '\n'
+        return (self.name +' - ' + self.state + '\n')
         # final_string = self.name
         # final_string += ' Parent List ->  '
         # for node in self.parent_list:
